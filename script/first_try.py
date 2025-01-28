@@ -1,7 +1,10 @@
+import torch
+from torch import nn, optim
+
 import bert.processor
 import bert.datamata
-from bert.Embedding import Embedding
-from bert.ScaledDotProductAttention import ScaledDotProductAttention
+from bert.Bert import BERT
+from bert.Settings import Settings
 
 text = (
     'Hello, how are you? I am Romeo.\n'
@@ -12,35 +15,49 @@ text = (
     'Thanks you Romeo'
 )
 
-# settings TODO put in class
-maxlen = 30 # maximum of length
-batch_size = 6
-max_pred = 5  # max tokens of prediction
-n_layers = 6 # number of Encoder of Encoder Layer
-n_heads = 12 # number of heads in Multi-Head Attention
-d_model = 768 # Embedding Size
-d_ff = 768 * 4  # 4*d_model, FeedForward dimension
-d_k = d_v = 64  # dimension of K(=Q), V
-n_segments = 2
-# settings over
+settings = Settings()
 
 prepared_text = bert.processor.prepare(text)
-batch = bert.processor.make_batch(prepared_text, maxlen, batch_size, max_pred)
-
-input_ids, segment_ids, masked_tokens, masked_pos, isNext = bert.datamata.do_the_shit(batch)
-
-emb = Embedding(maxlen, d_model, n_segments)
-embeds = emb(input_ids, segment_ids)
-
-attenM = bert.datamata.get_attn_pad_mask(input_ids, input_ids)
-
-SDPA = ScaledDotProductAttention()(embeds, embeds, embeds, attenM)
-
-S, C, A = SDPA
 
 
-print('Scores: ', S[0][0],'\n\nAttention M: ', A[0][0])
+model = BERT(prepared_text.vocab_size, settings)
+
+batch = bert.processor.make_batch(prepared_text, settings.maxlen, settings.batch_size, settings.max_pred)
+
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 
+input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(*batch))
 
+# -- training
+
+for epoch in range(100):
+    optimizer.zero_grad()
+    logits_lm, logits_clsf = model(input_ids, segment_ids, masked_pos)
+    loss_lm = criterion(logits_lm.transpose(1, 2), masked_tokens) # for masked LM
+    loss_lm = (loss_lm.float()).mean()
+    loss_clsf = criterion(logits_clsf, isNext) # for sentence classification
+    loss = loss_lm + loss_clsf
+    if (epoch + 1) % 10 == 0:
+        print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
+    loss.backward()
+    optimizer.step()
+
+
+# -- output
+
+print(text)
+print([prepared_text.number_dict[w.item()] for w in input_ids[0] if prepared_text.number_dict[w.item()] != '[PAD]'])
+
+logits_lm, logits_clsf = model(input_ids, segment_ids, masked_pos) # Logits are typically the raw, unnormalized predictions (scores) for each token in your vocabulary
+logits_lm = logits_lm.data.max(2)[1][0].data.numpy()
+print('masked tokens list : ', [pos.item() for pos in masked_tokens[0] if pos.item() != 0])
+print('predict masked tokens list : ', [pos for pos in logits_lm if pos != 0])
+
+print('predicted words for masked tokens : ', [pos for pos in logits_lm if pos != 0])
+
+logits_clsf = logits_clsf.data.max(1)[1].data.numpy()[0]
+print('isNext : ', isNext) # This is a tensor showing whether the model predicts the next sentence as a continuation of the current one or not.
+print('predict isNext : ', True if logits_clsf else False) # This suggests that the model's final prediction is that the second sentence in the input is likely the continuation of the first sentence.
 

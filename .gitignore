@@ -1,1 +1,5 @@
 venv
+gen
+frontend/src/gen
+results
+**/node_modules

@@ -1,0 +1,321 @@
+openapi: 3.0.3
+info:
+  title: Coding-Service-API
+  description: Coding-Service-API
+  version: 0.0.1
+paths:
+  /info:
+    get:
+      summary: return conding service identification
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceInfo"
+
+  /tasks:
+    put:
+      summary: add a task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskType"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+    get:
+      summary: get list of all tasks
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+
+  /tasks/{task_id}:
+    get:
+      summary: get specific task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/TaskId"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    patch:
+      summary: perform action on task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/TaskId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskAction"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/TaskId"
+      responses:
+        200:
+          description: OK
+
+  /tasks/{task_id}/data:
+    put:
+      summary: add a chunk of data for a specific task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/TaskId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DataSet"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    $ref: "#/components/schemas/DataChunk"
+
+  /tasks/{task_id}/data/{chunk_id}:
+    get:
+      summary: retrieve a chunk of data from a specific task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/TaskId"
+        - in: path
+          name: chunk_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/ChunkId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataSet"
+    delete:
+      summary: delete a chunk of data from a specific task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/TaskId"
+        - in: path
+          name: chunk_id
+          required: true
+          schema:
+            $ref: "#/components/schemas/ChunkId"
+      responses:
+        200:
+          description: OK
+
+
+components:
+  schemas:
+    ServiceInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 'ExampleCodingService1'
+        type:
+          type: string
+          example: 'example-coding-service'
+        version:
+          type: string
+          example: '1.0.2'
+          pattern: ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9A-Za-z-][0-9A-Za-z-]*)(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$
+        apiVersion:
+          type: string
+          example: '0.0.1'
+          pattern: ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9A-Za-z-][0-9A-Za-z-]*)(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$
+    TaskId:
+      type: string
+      properties:
+        type:
+          type: string
+      example: 'task#1234569'
+    TaskType:
+      type: string
+      properties:
+        type:
+          type: string
+          enum:
+            - 'train'
+            - 'code'
+      example: 'train'
+    TaskAction:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - 'commit'
+            - 'abort'
+      example: 'commit'
+    Task:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/TaskId"
+        type:
+          $ref: "#/components/schemas/TaskType"
+        statusHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [ 'created', 'commited', 'started', 'active', 'error', 'finished', 'aborted' ]
+              message:
+                type: string
+              timestamp:
+                type: integer
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataChunk"
+      required:
+        - id
+        - type
+        - statusHistory
+      example: {
+        "taskId": 123456,
+        "type": "train",
+        "statusHistory": {
+          [
+            status: "created",
+            message: "task created",
+            timestamp: 123456789
+          ]
+        }
+      }
+    ChunkId:
+      type: string
+      example: "chunk#13346"
+    ChunkType:
+      type: string
+      enum:
+        - "input"
+        - "output"
+      example: "input"
+    DataChunk:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ChunkId"
+        type:
+          $ref: "#/components/schemas/ChunkType"
+      required:
+        - id
+        - type
+    DataSet:
+      type: array
+      items:
+        $ref: "#/components/schemas/Response"
+      example:
+        [
+          { id: 'a', value: 'A', status: 'VALUE_CHANGED' },
+          { id: 'b', value: 'B', status: 'VALUE_CHANGED' },
+          { id: 'c', value: 'C', status: 'VALUE_CHANGED' },
+          { id: 'd', value: 'D', status: 'VALUE_CHANGED' },
+        ]
+    Response:
+      title: Response
+      description: Data structure produced by verona players
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: ^[0-9a-zA-Z_-]+$
+          description: Identifier for the data source (variable)
+        status:
+          type: string
+          enum:
+            - UNSET
+            - NOT_REACHED
+            - DISPLAYED
+            - PARTLY_DISPLAYED
+            - VALUE_CHANGED
+            - DERIVE_PENDING
+            - DERIVE_ERROR
+            - NO_CODING
+            - INVALID
+            - CODING_INCOMPLETE
+            - CODING_ERROR
+            - CODING_COMPLETE
+            - INTENDED_INCOMPLETE
+          description: Status as stage in the workflow of creating and coding a variable's value
+        value:
+          anyOf:
+            - type: array
+              items:
+                type: string
+            - type: array
+              items:
+                type: number
+            - type: array
+              items:
+                type: boolean
+            - type: number
+            - type: string
+            - type: boolean
+        subform:
+          type: string
+          description: If variables i. e. data source ids are not unique in the unit, 'subform' can specify the sub object related to the specific variable.
+        code:
+          type: integer
+          description: Code representing the category of the value after coding process.
+        score:
+          type: integer
+          description: This value represents the result evaluation of the code after coding process.
+      required:
+        - id
+        - status
+        - value
+
