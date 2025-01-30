@@ -3,3 +3,7 @@ gen
 frontend/src/gen
 results
 **/node_modules
+**/dist
+**/gen
+
+autocoder-service/data

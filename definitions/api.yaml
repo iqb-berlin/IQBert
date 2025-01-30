@@ -22,7 +22,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TaskType"
+              type: object
+              properties:
+                type:
+                  $ref: "#/components/schemas/TaskType"
+              required:
+                - type
+            example: { type: train }
       responses:
         "200":
           description: OK
@@ -71,7 +77,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TaskAction"
+              type: object
+              properties:
+                action:
+                  $ref: "#/components/schemas/TaskAction"
+              required:
+                - action
       responses:
         200:
           description: OK
@@ -204,14 +215,14 @@ components:
           $ref: "#/components/schemas/TaskId"
         type:
           $ref: "#/components/schemas/TaskType"
-        statusHistory:
+        events:
           type: array
           items:
             type: object
             properties:
               status:
                 type: string
-                enum: [ 'created', 'commited', 'started', 'active', 'error', 'finished', 'aborted' ]
+                enum: [ 'create', 'commit', 'start', 'fail', 'finish', 'abort' ]
               message:
                 type: string
               timestamp:
@@ -223,7 +234,7 @@ components:
       required:
         - id
         - type
-        - statusHistory
+        - events
       example: {
         "taskId": 123456,
         "type": "train",
@@ -233,7 +244,12 @@ components:
             message: "task created",
             timestamp: 123456789
           ]
-        }
+        },
+        "data": [
+          {
+            "id":
+          }
+        ]
       }
     ChunkId:
       type: string
