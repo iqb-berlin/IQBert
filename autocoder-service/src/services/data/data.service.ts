@@ -8,17 +8,21 @@ import { Response as IQBVariable } from '@iqb/responses';
 @Injectable()
 export class DataService {
   constructor(
-    @Inject('DATA_DIR') private dataDir: string
+    @Inject('STORAGE_DIR') private storageDir: string
   ) {
+    if (!fs.existsSync(`${this.storageDir}/data`)) {
+      fs.mkdirSync(`${this.storageDir}/data`);
+    }
   }
+
   add(data: IQBVariable[]): string {
     const id = IdService.create();
-    fs.writeFileSync(`${this.dataDir}/${id}.json`, JSON.stringify(data), { encoding: 'utf8'});  // TODO use async
+    fs.writeFileSync(`${this.storageDir}/data/${id}.json`, JSON.stringify(data), { encoding: 'utf8'});  // TODO use async
     return id;
   }
 
   get(chunkId: string): IQBVariable[] {
-    if (!fs.existsSync(`${this.dataDir}/${chunkId}.json`)) {
+    if (!fs.existsSync(`${this.storageDir}/data/${chunkId}.json`)) {
       throw new HttpException(`Data chunk '${chunkId}' not found.`, HttpStatus.NOT_FOUND);
     }
     const data = fs.readFileSync(`data/${chunkId}.json`, { encoding: 'utf8'}); // TODO use async
@@ -26,14 +30,14 @@ export class DataService {
   }
 
   delete(chunkId: string): void {
-    if (fs.existsSync(`${this.dataDir}/${chunkId}.json`)) {
+    if (fs.existsSync(`${this.storageDir}/data/${chunkId}.json`)) {
       throw new HttpException(`Data chunk not found.`, HttpStatus.NOT_FOUND);
     }
-    fs.rmSync(`${this.dataDir}/${chunkId}.json`); // TODO use async
+    fs.rmSync(`${this.storageDir}/${chunkId}.json`); // TODO use async
   }
 
   restore(): string[] {
-    return fs.readdirSync(`${this.dataDir}/`)
+    return fs.readdirSync(`${this.storageDir}/data/`)
       .filter(file => file.endsWith('.json'))
       .map(file => {
         console.log(file);

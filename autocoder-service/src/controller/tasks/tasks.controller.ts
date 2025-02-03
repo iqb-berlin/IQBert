@@ -5,15 +5,17 @@ import {
   Task,
   TaskActions,
   TaskTypes
-} from '../../interfaces/interfaces';
+} from '../../interfaces/api.interfaces';
 import { Response as IQBVariable } from '@iqb/responses';
-import { isResponse, isResponseList } from '../../interfaces/iqb.interfaces';
+import { isResponse } from '../../interfaces/iqb.interfaces';
+import { AutocoderService } from '../../services/autocoder/autocoder.service';
 
 
 @Controller('tasks')
 export class TasksController {
   constructor(
-    private ts: TasksService
+    private readonly ts: TasksService,
+    private readonly as: AutocoderService
   ) {
   }
 
@@ -26,8 +28,14 @@ export class TasksController {
   put(
     @Body() body: unknown
   ): Task {
-    if (!isCarrier(body, 'type', TaskTypes)) throw new HttpException('Invalid body', HttpStatus.NOT_ACCEPTABLE);
-    return this.ts.add(body.type);
+    if (!isCarrier(body, 'type', TaskTypes)) throw new HttpException('Invalid or missing type', HttpStatus.NOT_ACCEPTABLE);
+    if (!('instructions' in body)) throw new HttpException('missing coding scheme', HttpStatus.NOT_ACCEPTABLE);
+    if (typeof body.instructions !== "object") {
+      throw new HttpException('Malformed coding scheme', HttpStatus.NOT_ACCEPTABLE);
+    } else {
+      this.as.validateScheme(body.instructions);
+      return this.ts.add(body.type, body.instructions);
+    }
   }
 
   @Get(':taskId')

@@ -3,7 +3,17 @@ export interface ServiceInfo {
   readonly type: string;
   readonly version: string;
   readonly apiVersion: string;
+  readonly instructionsSchema: object;
 }
+
+export const isServiceInfo =
+  (thing: unknown): thing is ServiceInfo =>
+    (typeof thing == 'object') && (thing != null) &&
+    ('id' in thing) && (typeof thing.id == 'string') &&
+    ('type' in thing) && (typeof thing.type == 'string') &&
+    ('version' in thing) && (typeof thing.version == 'string') &&
+    ('apiVersion' in thing) && (typeof thing.apiVersion == 'string') &&
+    ('instructionsSchema' in thing) && (typeof thing.instructionsSchema == 'object');
 
 export const TaskTypes = ['train', 'code', 'undefined'] as const;
 export const TaskActions = ['commit', 'abort'] as const;
@@ -31,6 +41,7 @@ export interface Task {
   readonly type: TaskType;
   readonly events: TaskEvent[];
   readonly data: DataChunk[];
+  readonly instructions: object;
 }
 
 export function isA<K>(collection: string[] | readonly string[], str: unknown): str is K {
@@ -60,6 +71,11 @@ export function isTask(task: object): task is Task {
     ('data' in task) && isArrayOf<DataChunk>(task.events, isDataChunk);
 }
 
-export const isCarrier = <Key extends string, Z extends string>(thing: unknown, fieldName: Key, collection: Z[] | readonly Z[]): thing is { [fieldName in Key]: Z } =>
-  (typeof thing === 'object') && (thing != null) && (fieldName in thing) &&
-  (typeof thing[fieldName as string] === "string") && (collection as readonly string[]).includes(thing[fieldName as string]);
+export const isCarrier = <Key extends string, Z extends string>(thing: unknown, fieldName: Key, collection: Z[] | readonly Z[]):
+  thing is { [fieldName in Key]: Z } =>
+    (typeof thing === 'object') && (thing != null) && (fieldName in thing) &&
+    // @ts-ignore
+    (typeof thing[fieldName] === "string") && (collection as readonly string[]).includes(thing[fieldName as string]);
+
+
+

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { isA, Task, TaskAction, TaskActions, TaskEventType, TaskType } from '../../interfaces/interfaces';
-import { Response as IQBVariable, validStatesToStartDeriving } from '@iqb/responses';
+import { Task, TaskAction, TaskEventType, TaskType } from '../../interfaces/api.interfaces';
+import { CodingScheme, Response as IQBVariable } from '@iqb/responses';
 import { IdService } from '../id.service';
 import { DataService } from '../data/data.service';
 
@@ -36,7 +36,11 @@ export class TasksService {
     return this.tasks[id];
   }
 
-  add(type: TaskType): Task {
+  getNext(): Task | undefined {
+    return Object.values(this.tasks).find(task => TasksService.getLastEvent(task) === 'commit');
+  }
+
+  add(type: TaskType, instructions: object): Task {
     const newTask: Task = {
       id: IdService.create(),
       events: [{
@@ -45,7 +49,8 @@ export class TasksService {
         timestamp: Date.now()
       }],
       type,
-      data: []
+      data: [],
+      instructions,
     }
     this.tasks[newTask.id] = newTask;
     return newTask;
@@ -135,7 +140,8 @@ export class TasksService {
         timestamp: Date.now()
       }],
       id,
-      type: 'undefined'
+      type: 'undefined',
+      instructions: new CodingScheme([])
     }
   }
 }

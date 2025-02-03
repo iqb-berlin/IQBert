@@ -1,5 +1,5 @@
 import { Response } from '@iqb/responses';
-import { isArrayOf, isA } from './interfaces';
+import { isArrayOf, isA } from './api.interfaces';
 import { ResponseStatusType, ResponseValueType } from '@iqb/responses/coding-interfaces';
 
 export const ResponseStatusList = ['UNSET', 'NOT_REACHED', 'DISPLAYED', 'VALUE_CHANGED', 'SOURCE_MISSING',
@@ -23,3 +23,4 @@ export const isResponse =
 
 export const isResponseList = (thing: unknown): thing is Response[] =>
   isArrayOf<Response>(thing, isResponse);
+
