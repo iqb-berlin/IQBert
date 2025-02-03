@@ -5,7 +5,7 @@ export interface ServiceInfo {
   readonly apiVersion: string;
 }
 
-export const TaskTypes = ['train', 'code'] as const;
+export const TaskTypes = ['train', 'code', 'undefined'] as const;
 export const TaskActions = ['commit', 'abort'] as const;
 export const TaskEventTypes = [ 'create', 'commit', 'start', 'fail', 'finish', 'abort' ] as const;
 export const ChunkTypes = ['input', 'output'];
@@ -14,9 +14,6 @@ export type TaskType = (typeof TaskTypes[number]);
 export type TaskAction = (typeof TaskActions[number]);
 export type TaskEventType = (typeof TaskEventTypes[number]);
 export type ChunkType = (typeof ChunkTypes[number]);
-
-export const KeywordCollection = { TaskTypes, TaskActions, TaskEventTypes, ChunkTypes } as const;
-export type KeywordCollectionType = TaskType | TaskAction | TaskEventType | ChunkType;
 
 export interface TaskEvent {
   readonly status: TaskEventType;
@@ -33,19 +30,36 @@ export interface Task {
   readonly id: string;
   readonly type: TaskType;
   readonly events: TaskEvent[];
-  readonly data: DataChunk[]
+  readonly data: DataChunk[];
 }
 
-export function isIn<K extends KeywordCollectionType>(collection: keyof typeof KeywordCollection, str: string): str is K {
-  return (KeywordCollection[collection] as readonly string[]).includes(str);
+export function isA<K>(collection: string[] | readonly string[], str: unknown): str is K {
+  return (typeof str === "string") && (collection as readonly string[]).includes(str);
 }
 
-export function isTaskEvent(event: object): event is taskEvent {
-  return (KeywordCollection[collection] as readonly string[]).includes(str);
+export function isTaskEvent(event: unknown): event is TaskEvent {
+  return (typeof event == 'object') && (event != null) &&
+    ('timestamp' in event) && (typeof 'timestamp' === 'number') &&
+    ('status' in event) && (typeof event.status === 'string') && isA<TaskEventType>(TaskEventTypes, event.status);
+}
+
+export function isDataChunk(thing: unknown): thing is DataChunk {
+  return (typeof thing === 'object') && (thing != null) &&
+    ('id' in thing) && (typeof thing.id === 'string') &&
+    ('type' in thing) && isA<ChunkType>(ChunkTypes, thing.type);
+}
+
+export function isArrayOf<T>(thing: unknown, typeGuard: ((t: unknown) => t is T)): thing is T[] {
+  return Array.isArray(thing) && thing.every(typeGuard);
 }
 
 export function isTask(task: object): task is Task {
   return ('id' in task) && (typeof task.id === 'string') &&
-    ('type' in task) && (typeof task.type === 'string') && isIn<TaskType>('TaskTypes', task.type) &&
-    ('event' in task) && Array.isArray(task) &&
+    ('type' in task) && isA<TaskType>(TaskTypes, task.type) &&
+    ('events' in task) && isArrayOf<TaskEvent>(task.events, isTaskEvent) &&
+    ('data' in task) && isArrayOf<DataChunk>(task.events, isDataChunk);
 }
+
+export const isCarrier = <Key extends string, Z extends string>(thing: unknown, fieldName: Key, collection: Z[] | readonly Z[]): thing is { [fieldName in Key]: Z } =>
+  (typeof thing === 'object') && (thing != null) && (fieldName in thing) &&
+  (typeof thing[fieldName as string] === "string") && (collection as readonly string[]).includes(thing[fieldName as string]);

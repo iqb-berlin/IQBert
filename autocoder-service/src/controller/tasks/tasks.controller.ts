@@ -1,7 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Put } from '@nestjs/common';
 import { TasksService } from '../../services/tasks/tasks.service';
-import { Task, TaskAction, TaskType } from '../../interfaces/interfaces';
-import { IQBVariable } from '../../interfaces/iqb.interfaces';
+import {
+  isCarrier,
+  Task,
+  TaskActions,
+  TaskTypes
+} from '../../interfaces/interfaces';
+import { Response as IQBVariable } from '@iqb/responses';
+import { isResponse, isResponseList } from '../../interfaces/iqb.interfaces';
+
 
 @Controller('tasks')
 export class TasksController {
@@ -11,41 +18,51 @@ export class TasksController {
   }
 
   @Get()
-  get(): Task[] {
+  getAll(): Task[] {
     return this.ts.getAll();
   }
 
   @Put()
   put(
-    @Body() body: { type: TaskType }
+    @Body() body: unknown
   ): Task {
+    if (!isCarrier(body, 'type', TaskTypes)) throw new HttpException('Invalid body', HttpStatus.NOT_ACCEPTABLE);
     return this.ts.add(body.type);
   }
 
-  @Patch(':taskId')
+  @Get(':taskId')
+  get(
+    @Param('taskId') taskId: string
+  ): Task {
+    return this.ts.get(taskId);
+  }
+
+  @Patch('/:taskId')
   patch(
     @Param('taskId') taskId: string,
-    @Body() body: { action: TaskAction }
+    @Body() body: unknown // { action: TaskAction }
   ): Task {
+    if (!isCarrier(body, 'action', TaskActions)) throw new HttpException('Invalid body', HttpStatus.NOT_ACCEPTABLE);
     return this.ts.action(taskId, body.action);
   }
 
-  @Delete(':taskId')
+  @Delete('/:taskId')
   delete(
     @Param('taskId') taskId: string,
   ): void {
     this.ts.delete(taskId);
   }
 
-  @Put(':taskId/data')
+  @Put('/:taskId/data')
   putData(
     @Param('taskId') taskId: string,
-    @Body() body: IQBVariable[]
-  ): {  id: string } {
+    @Body() body: unknown //IQBVariable[]
+  ): { id: string } {
+    if (!TasksController.validateDataChunk(body)) return { id: 'invalid data' };
     return this.ts.addData(taskId, body)
   }
 
-  @Get(':taskId/data/:chunkId')
+  @Get('/:taskId/data/:chunkId')
   getData(
     @Param('taskId') taskId: string,
     @Param('chunkId') chunkId: string
@@ -53,11 +70,23 @@ export class TasksController {
     return this.ts.getData(taskId, chunkId)
   }
 
-  @Delete(':taskId/data/:chunkId')
+  @Delete('/:taskId/data/:chunkId')
   deleteData(
     @Param('taskId') taskId: string,
     @Param('chunkId') chunkId: string
   ): void {
     this.ts.deleteData(taskId, chunkId)
+  }
+
+  static validateDataChunk(thing: unknown): thing is IQBVariable[] {
+    if (!Array.isArray(thing)) {
+      throw new HttpException('Not an Array.', HttpStatus.NOT_ACCEPTABLE);
+    }
+    const failure = thing.findIndex(r => !isResponse(r));
+    if (failure > -1) {
+      console.log(thing[failure]);
+      throw new HttpException(`Invalid dataset nr ${failure}.`, HttpStatus.NOT_ACCEPTABLE);
+    }
+    return true;
   }
 }

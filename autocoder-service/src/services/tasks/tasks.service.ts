@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Task, TaskAction, TaskEventType, TaskType } from '../../interfaces/interfaces';
-import { IQBVariable } from '../../interfaces/iqb.interfaces';
+import { isA, Task, TaskAction, TaskActions, TaskEventType, TaskType } from '../../interfaces/interfaces';
+import { Response as IQBVariable, validStatesToStartDeriving } from '@iqb/responses';
 import { IdService } from '../id.service';
 import { DataService } from '../data/data.service';
 
@@ -9,8 +9,8 @@ export class TasksService {
   constructor(
     private ds: DataService
   ) {
+    this.restore();
   }
-
 
   private tasks: { [ id: string] : Task } = { };
 
@@ -51,10 +51,10 @@ export class TasksService {
     return newTask;
   }
 
-  action(id: string, type: TaskAction): Task {
+  action(id: string, taskAction: TaskAction): Task {
     const task = this.get(id);
     const lastEvent = TasksService.getLastEvent(task);
-    switch (type) {
+    switch (taskAction) {
       case 'commit':
         if (lastEvent !== 'create') {
           throw new HttpException(`Can not commit ${lastEvent}ed task.`, HttpStatus.NOT_ACCEPTABLE);
@@ -91,7 +91,7 @@ export class TasksService {
   addData(taskId: string, data: IQBVariable[]): { id: string } {
     const task = this.get(taskId);
     const lastEvent = TasksService.getLastEvent(task);
-    if (lastEvent !== 'start') {
+    if (lastEvent !== 'create') {
       throw new HttpException(`Can not add data to ${lastEvent}ed task.`, HttpStatus.FORBIDDEN);
     }
     return { id: this.ds.add(data) };
@@ -103,7 +103,7 @@ export class TasksService {
 
   getData(taskId: string, chunkId: string): IQBVariable[] {
     const task = this.get(taskId);
-    if (TasksService.hasData(task, chunkId)) {
+    if (!TasksService.hasData(task, chunkId)) {
       throw new HttpException(`Data chunk not attached to task`, HttpStatus.NOT_ACCEPTABLE);
     }
     return this.ds.get(chunkId);
@@ -111,9 +111,31 @@ export class TasksService {
 
   deleteData(taskId: string, chunkId: string): void {
     const task = this.get(taskId);
-    if (TasksService.hasData(task, chunkId)) {
+    if (!TasksService.hasData(task, chunkId)) {
       throw new HttpException(`Data chunk not attached to task`, HttpStatus.NOT_ACCEPTABLE);
     }
     this.ds.delete(chunkId);
+  }
+
+  restore(): void {
+    if (Object.keys(this.tasks).length > 0) {
+      throw new Error('Only call restore on bootstrap application');
+    }
+    const data = this.ds.restore();
+    if (!data.length) return;
+    const id = '__orphaned_data__';
+    this.tasks[id] = {
+      data: data.map(chunkId => ({
+        id: chunkId,
+        type: 'input'
+      })),
+      events: [{
+        status: 'create',
+        message: 'automatically created because data dir was not empty on startup',
+        timestamp: Date.now()
+      }],
+      id,
+      type: 'undefined'
+    }
   }
 }
