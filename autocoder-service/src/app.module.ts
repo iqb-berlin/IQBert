@@ -17,7 +17,7 @@ export class AppModule {
     return {
       module: AppModule,
       providers: [
-        { provide: 'STORAGE_DIR', useValue: path.join(__dirname, '/../../data') },
+        { provide: 'STORAGE_DIR', useValue: path.join(__dirname, '/../../../data') },
       ],
       exports: ['STORAGE_DIR']
     }

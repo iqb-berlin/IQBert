@@ -4,6 +4,7 @@ import { TasksService } from '../tasks/tasks.service';
 import { DataService } from '../data/data.service';
 import { IdService } from '../id.service';
 import { Response } from '@iqb/responses';
+import { CodingScheme } from '@iqb/responses/coding-scheme';
 
 @Injectable()
 export class WorkerService {
@@ -24,10 +25,11 @@ export class WorkerService {
           .map(chunk => ds.get(chunk.id))
           .reduce((agg, chunk) => [...agg, ...chunk], []);
         try {
-          const coder = new
-          const coded = nextTask.instructions.code(inputData);
+          const coded = (new CodingScheme(nextTask.instructions)).code(inputData);
+          const id = IdService.create();
+          this.ds.store(id, coded);
           nextTask.data.push({
-            id: IdService.create(),
+            id,
             type: 'output'
           });
           nextTask.events.push({

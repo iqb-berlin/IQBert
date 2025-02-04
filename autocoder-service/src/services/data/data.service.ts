@@ -44,4 +44,8 @@ export class DataService {
         return file.substring(0, file.indexOf('.json'));
      });
   }
+
+  store(id: string, coded: IQBVariable[]): void {
+    fs.writeFileSync(`${this.storageDir}/${id}.json`, JSON.stringify(coded));
+  }
 }

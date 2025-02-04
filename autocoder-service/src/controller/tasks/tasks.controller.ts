@@ -28,14 +28,10 @@ export class TasksController {
   put(
     @Body() body: unknown
   ): Task {
-    if (!isCarrier(body, 'type', TaskTypes)) throw new HttpException('Invalid or missing type', HttpStatus.NOT_ACCEPTABLE);
-    if (!('instructions' in body)) throw new HttpException('missing coding scheme', HttpStatus.NOT_ACCEPTABLE);
-    if (typeof body.instructions !== "object") {
-      throw new HttpException('Malformed coding scheme', HttpStatus.NOT_ACCEPTABLE);
-    } else {
-      this.as.validateScheme(body.instructions);
-      return this.ts.add(body.type, body.instructions);
-    }
+    if (!isCarrier(body, 'type', TaskTypes)) throw new HttpException('Invalid or missing task-type.', HttpStatus.NOT_ACCEPTABLE);
+    if (!('instructions' in body)) throw new HttpException('Missing coding scheme.', HttpStatus.NOT_ACCEPTABLE);
+    if (this.as.validateScheme(body.instructions)) return this.ts.add(body.type, body.instructions);
+    throw new HttpException('Validation of coding scheme did not work.', HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @Get(':taskId')

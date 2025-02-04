@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Task, TaskAction, TaskEventType, TaskType } from '../../interfaces/api.interfaces';
+import { AutoCodingInstructions, Task, TaskAction, TaskEventType, TaskType } from '../../interfaces/api.interfaces';
 import { CodingScheme, Response as IQBVariable } from '@iqb/responses';
 import { IdService } from '../id.service';
 import { DataService } from '../data/data.service';
+import { JSONSchema7 } from 'json-schema';
 
 @Injectable()
 export class TasksService {
@@ -40,7 +41,7 @@ export class TasksService {
     return Object.values(this.tasks).find(task => TasksService.getLastEvent(task) === 'commit');
   }
 
-  add(type: TaskType, instructions: object): Task {
+  add(type: TaskType, instructions: AutoCodingInstructions): Task {
     const newTask: Task = {
       id: IdService.create(),
       events: [{
