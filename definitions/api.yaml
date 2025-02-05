@@ -234,7 +234,7 @@ components:
             - 'code'
       example: 'train'
     TaskAction:
-      type: object
+      action: object
       properties:
         type:
           type: string

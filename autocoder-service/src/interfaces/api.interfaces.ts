@@ -48,7 +48,7 @@ export interface Task {
 
 export interface JSONSchema {
   $id: string;
-  $scheme: string;
+  $schema: string;
 }
 
 export type AutoCodingInstructions = {
@@ -83,6 +83,12 @@ export function isTask(thing: unknown): thing is Task {
     ('events' in thing) && isArrayOf<TaskEvent>(thing.events, isTaskEvent) &&
     ('data' in thing) && isArrayOf<DataChunk>(thing.data, isDataChunk);
 }
+
+export const contains = <Key extends PropertyKey, Z>(thing: unknown, fieldName: Key, example: Z):
+  thing is Record<Key, Z> =>
+    (typeof thing === 'object') && (thing != null) && (fieldName in thing) &&
+    // @ts-ignore
+    (typeof thing[fieldName] === typeof example);
 
 export const isCarrier = <Key extends string, Z extends string>(thing: unknown, fieldName: Key, collection: Z[] | readonly Z[]):
   thing is { [fieldName in Key]: Z } =>

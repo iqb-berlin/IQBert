@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { isResponse } from './iqb.interfaces';
-import { isCarrier, isTask } from './api.interfaces';
+import { contains, isCarrier, isTask } from './api.interfaces';
 
 describe('TypeGuards', () => {
 
@@ -24,6 +24,14 @@ describe('TypeGuards', () => {
     expect(isCarrier({ a:'1' }, 'a', ['1'])).toBeTruthy()
     expect(isCarrier({ a:'1' }, 'c', ['1'])).toBeFalsy()
     expect(isCarrier({ a:'1' }, 'a', ['2'])).toBeFalsy()
+  });
+
+  it('contains', () => {
+    expect(contains({ a: '1' }, 'a', 'string')).toBeTruthy();
+    expect(contains({ a: '1' }, 'a', 'number')).toBeFalsy();
+    expect(contains({ a: 1 }, 'a', 'string')).toBeFalsy();
+    expect(contains({ a: 1 }, 'a', 'number')).toBeTruthy();
+    expect(contains({ x: true, y: false }, 'y', 'boolean')).toBeTruthy();
   });
 
   it('isTask', () => {

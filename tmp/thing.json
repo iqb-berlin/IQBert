@@ -1,0 +1,37 @@
+[
+  {
+    "id": "image_1",
+    "status": "DISPLAYED",
+    "value": false
+  },
+  {
+    "id": "text_1",
+    "status": "DISPLAYED",
+    "value": []
+  },
+  {
+    "id": "LFB152a",
+    "status": "VALUE_CHANGED",
+    "value": 1
+  },
+  {
+    "id": "LFB152b",
+    "status": "VALUE_CHANGED",
+    "value": 1
+  },
+  {
+    "id": "LFB152c",
+    "status": "VALUE_CHANGED",
+    "value": 2
+  },
+  {
+    "id": "LFB152d",
+    "status": "VALUE_CHANGED",
+    "value": 2
+  },
+  {
+    "id": "LFB152",
+    "status": "DISPLAYED",
+    "value": null
+  }
+]

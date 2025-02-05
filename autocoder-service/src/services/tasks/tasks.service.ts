@@ -128,6 +128,7 @@ export class TasksService {
       throw new Error('Only call restore on bootstrap application');
     }
     const data = this.ds.restore();
+    const exampleCodingScheme = this.ds.getExampleCodingScheme();
     if (!data.length) return;
     const id = '__orphaned_data__';
     this.tasks[id] = {
@@ -142,7 +143,7 @@ export class TasksService {
       }],
       id,
       type: 'undefined',
-      instructions: new CodingScheme([])
+      instructions: exampleCodingScheme
     }
   }
 }
