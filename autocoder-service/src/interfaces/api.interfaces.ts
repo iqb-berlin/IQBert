@@ -1,4 +1,5 @@
-import { CodingScheme } from '@iqb/responses/coding-scheme';
+import { AutoCodingInstructions, contains, isA, isArrayOf, isResponse } from './iqb.interfaces';
+import { Response } from '@iqb/responses';
 
 export interface ServiceInfo {
   readonly id: string;
@@ -7,15 +8,6 @@ export interface ServiceInfo {
   readonly apiVersion: string;
   readonly instructionsSchema: JSONSchema;
 }
-
-export const isServiceInfo =
-  (thing: unknown): thing is ServiceInfo =>
-    (typeof thing == 'object') && (thing != null) &&
-    ('id' in thing) && (typeof thing.id == 'string') &&
-    ('type' in thing) && (typeof thing.type == 'string') &&
-    ('version' in thing) && (typeof thing.version == 'string') &&
-    ('apiVersion' in thing) && (typeof thing.apiVersion == 'string') &&
-    ('instructionsSchema' in thing) && (typeof thing.instructionsSchema == 'object') && isJsonSchema(thing.instructionsSchema);
 
 export const TaskTypes = ['train', 'code', 'undefined'] as const;
 export const TaskActions = ['commit', 'abort'] as const;
@@ -46,18 +38,13 @@ export interface Task {
   readonly instructions: AutoCodingInstructions;
 }
 
+export interface ResponseRow extends Response {
+  readonly setId: string;
+}
+
 export interface JSONSchema {
   $id: string;
   $schema: string;
-}
-
-export type AutoCodingInstructions = {
-  [Member in keyof CodingScheme]: CodingScheme[Member];
-};
-
-
-export function isA<K>(collection: string[] | readonly string[], str: unknown): str is K {
-  return (typeof str === "string") && (collection as readonly string[]).includes(str);
 }
 
 export function isTaskEvent(event: unknown): event is TaskEvent {
@@ -72,10 +59,6 @@ export function isDataChunk(thing: unknown): thing is DataChunk {
     ('type' in thing) && isA<ChunkType>(ChunkTypes, thing.type);
 }
 
-export function isArrayOf<T>(thing: unknown, typeGuard: ((t: unknown) => t is T)): thing is T[] {
-  return Array.isArray(thing) && thing.every(typeGuard);
-}
-
 export function isTask(thing: unknown): thing is Task {
   return (typeof thing === 'object') && (thing != null) &&
     ('id' in thing) && (typeof thing.id === 'string') &&
@@ -84,19 +67,22 @@ export function isTask(thing: unknown): thing is Task {
     ('data' in thing) && isArrayOf<DataChunk>(thing.data, isDataChunk);
 }
 
-export const contains = <Key extends PropertyKey, Z>(thing: unknown, fieldName: Key, example: Z):
-  thing is Record<Key, Z> =>
-    (typeof thing === 'object') && (thing != null) && (fieldName in thing) &&
-    // @ts-ignore
-    (typeof thing[fieldName] === typeof example);
-
-export const isCarrier = <Key extends string, Z extends string>(thing: unknown, fieldName: Key, collection: Z[] | readonly Z[]):
-  thing is { [fieldName in Key]: Z } =>
-    (typeof thing === 'object') && (thing != null) && (fieldName in thing) &&
-    // @ts-ignore
-    (typeof thing[fieldName] === "string") && (collection as readonly string[]).includes(thing[fieldName as string]);
-
 export const isJsonSchema = (thing: unknown): thing is JSONSchema =>
   (typeof thing === 'object') && (thing != null) &&
   ('$id' in thing) && (typeof thing.$id === 'string') &&
   ('$schema' in thing) && (typeof thing.$schema === 'string');
+
+export const isServiceInfo = (thing: unknown): thing is ServiceInfo =>
+  (typeof thing == 'object') && (thing != null) &&
+  ('id' in thing) && (typeof thing.id == 'string') &&
+  ('type' in thing) && (typeof thing.type == 'string') &&
+  ('version' in thing) && (typeof thing.version == 'string') &&
+  ('apiVersion' in thing) && (typeof thing.apiVersion == 'string') &&
+  ('instructionsSchema' in thing) && (typeof thing.instructionsSchema == 'object') && isJsonSchema(thing.instructionsSchema);
+
+export const isResponseRow= (thing: unknown): thing is ResponseRow =>
+  (typeof thing == 'object') && (thing != null) &&
+  isResponse(thing) && contains(thing, 'setId', '');
+
+export const isResponseRowList = (thing: unknown): thing is ResponseRow[] =>
+  isArrayOf(thing, isResponseRow);

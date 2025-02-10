@@ -1,6 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { isResponse } from './iqb.interfaces';
-import { contains, isCarrier, isTask } from './api.interfaces';
+import { contains, isCarrier, isResponse, isResponseList } from './iqb.interfaces';
+import { isResponseRow, isTask } from './api.interfaces';
 
 describe('TypeGuards', () => {
 
@@ -10,8 +9,7 @@ describe('TypeGuards', () => {
   });
 
   it('isResponseList should work', () => {
-
-    expect(isResponse([
+    expect(isResponseList([
       { "id": "a", "value": "A", "status": "VALUE_CHANGED" },
       { "id": "b", "value": "B", "status": "VALUE_CHANGED" },
       { "id": "c", "value": "C", "status": "VALUE_CHANGED" },
@@ -28,10 +26,10 @@ describe('TypeGuards', () => {
 
   it('contains', () => {
     expect(contains({ a: '1' }, 'a', 'string')).toBeTruthy();
-    expect(contains({ a: '1' }, 'a', 'number')).toBeFalsy();
+    expect(contains({ a: '1' }, 'a', 1)).toBeFalsy();
     expect(contains({ a: 1 }, 'a', 'string')).toBeFalsy();
-    expect(contains({ a: 1 }, 'a', 'number')).toBeTruthy();
-    expect(contains({ x: true, y: false }, 'y', 'boolean')).toBeTruthy();
+    expect(contains({ a: 1 }, 'a', 1)).toBeTruthy();
+    expect(contains({ x: true, y: false }, 'y', false)).toBeTruthy();
   });
 
   it('isTask', () => {
@@ -64,5 +62,10 @@ describe('TypeGuards', () => {
       }
     };
     expect(isTask(task)).toBeTruthy();
+  });
+
+  it('responseRow', () => {
+    expect(isResponseRow({ id: 'a', value: 'A', status: 'VALUE_CHANGED' })).toBeFalsy();
+    expect(isResponseRow({ id: 'a', value: 'A', status: 'VALUE_CHANGED', setId: 'user1' })).toBeTruthy();
   });
 });

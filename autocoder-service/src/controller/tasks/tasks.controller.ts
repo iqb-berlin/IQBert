@@ -1,13 +1,7 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Put } from '@nestjs/common';
 import { TasksService } from '../../services/tasks/tasks.service';
-import {
-  isCarrier,
-  Task,
-  TaskActions,
-  TaskTypes
-} from '../../interfaces/api.interfaces';
-import { Response as IQBVariable } from '@iqb/responses';
-import { isResponse } from '../../interfaces/iqb.interfaces';
+import { ResponseRow, Task, TaskActions, TaskTypes } from '../../interfaces/api.interfaces';
+import { isCarrier, isResponse } from '../../interfaces/iqb.interfaces';
 import { AutocoderService } from '../../services/autocoder/autocoder.service';
 
 
@@ -70,7 +64,7 @@ export class TasksController {
   getData(
     @Param('taskId') taskId: string,
     @Param('chunkId') chunkId: string
-  ): IQBVariable[] {
+  ): ResponseRow[] {
     return this.ts.getData(taskId, chunkId)
   }
 
@@ -82,7 +76,7 @@ export class TasksController {
     this.ts.deleteData(taskId, chunkId)
   }
 
-  static validateDataChunk(thing: unknown): thing is IQBVariable[] {
+  static validateDataChunk(thing: unknown): thing is ResponseRow[] {
     if (!Array.isArray(thing)) {
       throw new HttpException('Not an Array.', HttpStatus.NOT_ACCEPTABLE);
     }

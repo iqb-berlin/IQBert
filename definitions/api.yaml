@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Coding-Service-API
   description: Coding-Service-API
-  version: 0.0.1
+  version: 0.0.2
 paths:
   /info:
     get:
@@ -313,16 +313,19 @@ components:
         $ref: "#/components/schemas/Response"
       example:
         [
-          { id: 'a', value: 'A', status: 'VALUE_CHANGED' },
-          { id: 'b', value: 'B', status: 'VALUE_CHANGED' },
-          { id: 'c', value: 'C', status: 'VALUE_CHANGED' },
-          { id: 'd', value: 'D', status: 'VALUE_CHANGED' },
+          { setId: 'user1',  id: 'a', value: 'some answer', status: 'VALUE_CHANGED' },
+          { setId: 'user1',  id: 'b', value: 'some other answer', status: 'VALUE_CHANGED' },
+          { setId: 'user2',  id: 'a', value: 'some answer', status: 'VALUE_CHANGED' },
+          { setId: 'user2',  id: 'b', value: 'trash answer', status: 'VALUE_CHANGED' },
         ]
     Response:
       title: Response
       description: Data structure produced by verona players
       type: object
       properties:
+        setId:
+          type: string
+          description: Identifier of the set. Typically a user-id.
         id:
           type: string
           pattern: ^[0-9a-zA-Z_-]+$
@@ -368,6 +371,7 @@ components:
           type: integer
           description: This value represents the result evaluation of the code after coding process.
       required:
+        - setId
         - id
         - status
         - value

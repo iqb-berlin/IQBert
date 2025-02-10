@@ -3,8 +3,9 @@ import { interval, Observable } from 'rxjs';
 import { TasksService } from '../tasks/tasks.service';
 import { DataService } from '../data/data.service';
 import { IdService } from '../id.service';
-import { Response } from '@iqb/responses';
 import { CodingScheme } from '@iqb/responses/coding-scheme';
+import { ResponseRow, Task } from '../../interfaces/api.interfaces';
+import { Response } from '@iqb/responses';
 
 @Injectable()
 export class WorkerService {
@@ -19,31 +20,49 @@ export class WorkerService {
         const nextTask = this.ts.getNext();
         if (!nextTask) return;
         console.log(second, nextTask.id);
-
-        const inputData: Response[] = nextTask.data
-          .filter(task => task.type == 'input')
-          .map(chunk => ds.get(chunk.id))
-          .reduce((agg, chunk) => [...agg, ...chunk], []);
-        try {
-          const coded = (new CodingScheme(nextTask.instructions)).code(inputData);
-          const id = IdService.create();
-          this.ds.store(id, coded);
-          nextTask.data.push({
-            id,
-            type: 'output'
-          });
-          nextTask.events.push({
-            message: "Done!",
-            status: "finish",
-            timestamp: Date.now()
-          })
-        } catch (error) {
-          nextTask.events.push({
-            message: (error instanceof Error) ? error.message : 'unknown error',
-            status: 'fail',
-            timestamp: Date.now()
-          });
-        }
+        this.code(nextTask);
       });
+  }
+
+  private code(task: Task) {
+    const stripSetId = (row: ResponseRow): Response => {
+      const copy: Response & { setId?: string } = { ...row };
+      delete copy.setId;
+      return copy;
+    };
+    try {
+      const inputData: { [setId: string]: Response[] } = task.data
+        .filter(task => task.type == 'input')
+        .flatMap(chunk => this.ds.get(chunk.id))
+        .reduce((agg, row: ResponseRow) => {
+          if (!(row.setId in agg)) agg[row.setId] = [];
+          agg[row.setId].push(stripSetId(row));
+          return agg;
+        }, {});
+      const codingScheme = new CodingScheme(task.instructions);
+      const coded = Object.entries(inputData)
+        .flatMap(([setId, set]): ResponseRow[] =>
+          codingScheme.code(set)
+            .map((response: Response): ResponseRow => ({ ...response, setId }))
+        );
+      const id = IdService.create();
+      this.ds.store(id, coded);
+      task.data.push({
+        id,
+        type: 'output'
+      });
+      task.events.push({
+        message: "Done!",
+        status: "finish",
+        timestamp: Date.now()
+      })
+    } catch (error) {
+      task.events.push({
+        message: (error instanceof Error) ? error.message : 'unknown error',
+        status: 'fail',
+        timestamp: Date.now()
+      });
+      console.error(error);
+    }
   }
 }

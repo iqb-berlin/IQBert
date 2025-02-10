@@ -1,9 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { AutoCodingInstructions, Task, TaskAction, TaskEventType, TaskType } from '../../interfaces/api.interfaces';
-import { CodingScheme, Response as IQBVariable } from '@iqb/responses';
+import {
+  ResponseRow,
+  Task,
+  TaskAction,
+  TaskEventType,
+  TaskType
+} from '../../interfaces/api.interfaces';
 import { IdService } from '../id.service';
 import { DataService } from '../data/data.service';
-import { JSONSchema7 } from 'json-schema';
+import { AutoCodingInstructions } from '../../interfaces/iqb.interfaces';
 
 @Injectable()
 export class TasksService {
@@ -94,7 +99,7 @@ export class TasksService {
     delete this.tasks[id];
   }
 
-  addData(taskId: string, data: IQBVariable[]): { id: string } {
+  addData(taskId: string, data: ResponseRow[]): { id: string } {
     const task = this.get(taskId);
     const lastEvent = TasksService.getLastEvent(task);
     if (lastEvent !== 'create') {
@@ -107,7 +112,7 @@ export class TasksService {
     return task.data.some(d => d.id == chunkId);
   }
 
-  getData(taskId: string, chunkId: string): IQBVariable[] {
+  getData(taskId: string, chunkId: string): ResponseRow[] {
     const task = this.get(taskId);
     if (!TasksService.hasData(task, chunkId)) {
       throw new HttpException(`Data chunk not attached to task`, HttpStatus.NOT_ACCEPTABLE);
