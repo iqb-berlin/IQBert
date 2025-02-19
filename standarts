@@ -1,0 +1,8 @@
+Verona Player API   Verona          yml/asyncapi
+Verona Editor API   Verona          yml/asyncapi
+IQB Standard        IQB             json schema
+Coding-Scheme       IQB             json schema
+Unit                IQB             XML
+Booklet             ITC             XML
+Testtakers          ITC             XML
+Coding-Service      ??              openapi
