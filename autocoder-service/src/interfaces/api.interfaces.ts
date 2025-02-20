@@ -31,11 +31,11 @@ export interface DataChunk {
 }
 
 export interface Task {
-  readonly id: string;
-  readonly type: TaskType;
-  readonly events: TaskEvent[];
-  readonly data: DataChunk[];
-  readonly instructions: AutoCodingInstructions;
+  id: string;
+  type: TaskType;
+  events: TaskEvent[];
+  data: DataChunk[];
+  instructions: object;
 }
 
 export interface ResponseRow extends Response {
