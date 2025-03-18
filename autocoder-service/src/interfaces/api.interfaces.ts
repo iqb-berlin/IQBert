@@ -35,7 +35,7 @@ export interface Task {
   type: TaskType;
   events: TaskEvent[];
   data: DataChunk[];
-  instructions: object;
+  instructions: { [prop: string]: any };
 }
 
 export interface ResponseRow extends Response {

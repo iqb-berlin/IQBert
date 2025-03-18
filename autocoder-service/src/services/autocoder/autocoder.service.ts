@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as codingSchemeSchema from '../../../../definitions/coding-scheme.schema.json';
-import { Validator } from 'jsonschema';
+import { ValidationError, Validator, ValidatorResultError } from 'jsonschema';
 import { AutoCodingInstructions } from '../../interfaces/iqb.interfaces';
+import { CodingScheme } from '@iqb/responses/coding-scheme';
 
 
 @Injectable()
@@ -14,7 +15,19 @@ export class AutocoderService {
       this.validator.validate(codingScheme, this.schema, { required: true, throwAll: true });
       return true;
     } catch (e) {
-      throw new HttpException('Invalid Scheme: ' + e, HttpStatus.NOT_ACCEPTABLE);
+      console.log(e);
+      const text = (e instanceof ValidatorResultError) ?
+        (e.errors as unknown as ValidationError[]).map(e => e.stack) : // circumvent buggy type definition of ValidatorResultError
+        e;
+      console.error(text);
+      console.log(codingScheme);
+      throw new HttpException('Invalid Scheme: ' + text, HttpStatus.NOT_ACCEPTABLE);
     }
+  }
+
+  getEmptyScheme(): AutoCodingInstructions {
+    const scheme = { version: '0.0', variableCodings: [] };
+    if (this.validateScheme(scheme)) return scheme;
+    throw new Error('Could not create empty scheme');
   }
 }

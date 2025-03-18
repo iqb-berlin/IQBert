@@ -23,9 +23,11 @@ export class TasksController {
     @Body() body: unknown
   ): Task {
     if (!isCarrier(body, 'type', TaskTypes)) throw new HttpException('Invalid or missing task-type.', HttpStatus.NOT_ACCEPTABLE);
-    if (!('instructions' in body)) throw new HttpException('Missing coding scheme.', HttpStatus.NOT_ACCEPTABLE);
-    if (this.as.validateScheme(body.instructions)) return this.ts.add(body.type, body.instructions);
-    throw new HttpException('Validation of coding scheme did not work.', HttpStatus.INTERNAL_SERVER_ERROR);
+    if ('instructions' in body) {
+      if (this.as.validateScheme(body.instructions)) return this.ts.add(body.type, body.instructions)
+      throw new HttpException('Validation of coding scheme did not work.', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+    return this.ts.add(body.type, this.as.getEmptyScheme());
   }
 
   @Get(':taskId')
@@ -74,6 +76,19 @@ export class TasksController {
     @Param('chunkId') chunkId: string
   ): void {
     this.ts.deleteData(taskId, chunkId)
+  }
+
+  @Patch('/:taskId/instructions')
+  patchInstructions(
+    @Param('taskId') taskId: string,
+    @Body() body: unknown
+  ) {
+    if ((typeof body !== 'object') || (body == null)) {
+      console.log(body);
+      throw new HttpException('Invalid body!', HttpStatus.NOT_ACCEPTABLE);
+    }
+    if (this.as.validateScheme(body)) return this.ts.updateInstructions(taskId, body)
+    throw new HttpException('Validation of coding scheme did not work.', HttpStatus.INTERNAL_SERVER_ERROR)
   }
 
   static validateDataChunk(thing: unknown): thing is ResponseRow[] {

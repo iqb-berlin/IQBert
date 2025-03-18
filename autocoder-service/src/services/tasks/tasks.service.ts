@@ -151,4 +151,10 @@ export class TasksService {
       instructions: exampleCodingScheme
     }
   }
+
+  updateInstructions(taskId: string, instructions: AutoCodingInstructions): Task {
+    const task = this.get(taskId);
+    task.instructions = instructions;
+    return task;
+  }
 }

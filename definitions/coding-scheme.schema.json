@@ -1,5 +1,5 @@
 {
-  "$id": "coding-scheme@iqb-standard@3.2",
+  "$id": "coding-scheme@iqb-standard@3.2-fixed",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Coding Scheme",
   "description": "Data structure to specify all processing steps of response data in order to get coded and scored data for analyses.",
@@ -254,6 +254,6 @@
   },
   "required": [
     "version",
-    "variables"
+    "variableCodings"
   ]
 }
