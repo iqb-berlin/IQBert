@@ -12,7 +12,7 @@ export interface ServiceInfo {
 export const TaskTypes = ['train', 'code', 'undefined'] as const;
 export const TaskActions = ['commit', 'abort'] as const;
 export const TaskEventTypes = [ 'create', 'commit', 'start', 'fail', 'finish', 'abort' ] as const;
-export const ChunkTypes = ['input', 'output'];
+export const ChunkTypes = ['input', 'output'] as const;
 
 export type TaskType = (typeof TaskTypes[number]);
 export type TaskAction = (typeof TaskActions[number]);
