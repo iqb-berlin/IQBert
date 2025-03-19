@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Put } from '@nestjs/common';
 import { TasksService } from '../../services/tasks/tasks.service';
-import { ResponseRow, Task, TaskActions, TaskTypes } from '../../interfaces/api.interfaces';
+import { DataChunk, ResponseRow, Task, TaskActions, TaskTypes } from '../../interfaces/api.interfaces';
 import { isCarrier, isResponse } from '../../interfaces/iqb.interfaces';
 import { AutocoderService } from '../../services/autocoder/autocoder.service';
 
@@ -57,8 +57,8 @@ export class TasksController {
   putData(
     @Param('taskId') taskId: string,
     @Body() body: unknown //IQBVariable[]
-  ): { id: string } {
-    if (!TasksController.validateDataChunk(body)) return { id: 'invalid data' };
+  ): DataChunk {
+    if (!TasksController.validateDataChunk(body)) return { id: 'invalid data', type: 'input' };
     return this.ts.addData(taskId, body)
   }
 

@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
+  DataChunk,
   ResponseRow,
   Task,
   TaskAction,
@@ -99,13 +100,18 @@ export class TasksService {
     delete this.tasks[id];
   }
 
-  addData(taskId: string, data: ResponseRow[]): { id: string } {
+  addData(taskId: string, data: ResponseRow[]): DataChunk {
     const task = this.get(taskId);
     const lastEvent = TasksService.getLastEvent(task);
     if (lastEvent !== 'create') {
       throw new HttpException(`Can not add data to ${lastEvent}ed task.`, HttpStatus.FORBIDDEN);
     }
-    return { id: this.ds.add(data) };
+    const chunk: DataChunk = {
+      id: this.ds.add(data),
+      type: 'input'
+    }
+    task.data.push(chunk);
+    return chunk;
   }
 
   static hasData(task: Task, chunkId: string): boolean {
