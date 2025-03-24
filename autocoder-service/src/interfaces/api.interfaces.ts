@@ -1,4 +1,4 @@
-import { AutoCodingInstructions, contains, isA, isArrayOf, isResponse } from './iqb.interfaces';
+import { contains, isA, isArrayOf, isResponse } from './iqb.interfaces';
 import { Response } from '@iqb/responses';
 
 export interface ServiceInfo {
