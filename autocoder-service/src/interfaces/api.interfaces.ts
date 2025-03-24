@@ -47,25 +47,22 @@ export interface JSONSchema {
   $schema: string;
 }
 
-export function isTaskEvent(event: unknown): event is TaskEvent {
-  return (typeof event == 'object') && (event != null) &&
-    ('timestamp' in event) && (typeof event.timestamp === 'number') &&
-    ('status' in event) && (typeof event.status === 'string') && isA<TaskEventType>(TaskEventTypes, event.status);
-}
+export const isTaskEvent = (event: unknown): event is TaskEvent =>
+  (typeof event == 'object') && (event != null) &&
+  ('timestamp' in event) && (typeof event.timestamp === 'number') &&
+  ('status' in event) && (typeof event.status === 'string') && isA<TaskEventType>(TaskEventTypes, event.status);
 
-export function isDataChunk(thing: unknown): thing is DataChunk {
-  return (typeof thing === 'object') && (thing != null) &&
-    ('id' in thing) && (typeof thing.id === 'string') &&
-    ('type' in thing) && isA<ChunkType>(ChunkTypes, thing.type);
-}
+export const isDataChunk = (thing: unknown): thing is DataChunk =>
+  (typeof thing === 'object') && (thing != null) &&
+  ('id' in thing) && (typeof thing.id === 'string') &&
+  ('type' in thing) && isA<ChunkType>(ChunkTypes, thing.type);
 
-export function isTask(thing: unknown): thing is Task {
-  return (typeof thing === 'object') && (thing != null) &&
-    ('id' in thing) && (typeof thing.id === 'string') &&
-    ('type' in thing) && isA<TaskType>(TaskTypes, thing.type) &&
-    ('events' in thing) && isArrayOf<TaskEvent>(thing.events, isTaskEvent) &&
-    ('data' in thing) && isArrayOf<DataChunk>(thing.data, isDataChunk);
-}
+export const isTask = (thing: unknown): thing is Task =>
+  (typeof thing === 'object') && (thing != null) &&
+  ('id' in thing) && (typeof thing.id === 'string') &&
+  ('type' in thing) && isA<TaskType>(TaskTypes, thing.type) &&
+  ('events' in thing) && isArrayOf<TaskEvent>(thing.events, isTaskEvent) &&
+  ('data' in thing) && isArrayOf<DataChunk>(thing.data, isDataChunk);
 
 export const isJsonSchema = (thing: unknown): thing is JSONSchema =>
   (typeof thing === 'object') && (thing != null) &&
