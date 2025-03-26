@@ -1,12 +1,11 @@
 import { Response } from '@iqb/responses';
-import { ResponseStatusType, ResponseValueType } from '@iqb/responses/coding-interfaces';
-import { CodingScheme } from '@iqb/responses/coding-scheme';
+import { ResponseStatusType, ResponseValueType, VariableCodingData } from '@iqb/responses/coding-interfaces';
 
 export const ResponseStatusList = ['UNSET', 'NOT_REACHED', 'DISPLAYED', 'VALUE_CHANGED', 'SOURCE_MISSING',
   'DERIVE_ERROR', 'VALUE_DERIVED', 'NO_CODING', 'INVALID', 'CODING_INCOMPLETE', 'CODING_ERROR', 'CODING_COMPLETE'];
 
 export type AutoCodingInstructions = {
-  [Member in keyof CodingScheme]: CodingScheme[Member];
+    variableCodings: VariableCodingData[];
 };
 
 export const isA = <K>(collection: string[] | readonly string[], str: unknown): str is K =>

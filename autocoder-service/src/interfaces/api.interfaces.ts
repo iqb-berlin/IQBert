@@ -1,4 +1,4 @@
-import { contains, isA, isArrayOf, isResponse } from './iqb.interfaces';
+import {contains, isA, isArrayOf, isMapOf, isResponse} from './iqb.interfaces';
 import { Response } from '@iqb/responses';
 
 export interface ServiceInfo {
@@ -6,6 +6,11 @@ export interface ServiceInfo {
   readonly type: string;
   readonly version: string;
   readonly apiVersion: string;
+  readonly taskTypes: Partial<{[ taskType in typeof TaskTypes[number]]: TaskTypeInfo }>;
+}
+
+export interface TaskTypeInfo {
+  readonly instructionsText: string;
   readonly instructionsSchema: JSONSchema;
 }
 
@@ -30,9 +35,13 @@ export interface DataChunk {
   readonly type: ChunkType;
 }
 
-export interface Task {
-  id: string;
+export interface TaskSeed {
   type: TaskType;
+  label?: string;
+}
+
+export interface Task extends TaskSeed {
+  id: string;
   events: TaskEvent[];
   data: DataChunk[];
   instructions: { [prop: string]: any };
@@ -64,6 +73,15 @@ export const isTask = (thing: unknown): thing is Task =>
   ('events' in thing) && isArrayOf<TaskEvent>(thing.events, isTaskEvent) &&
   ('data' in thing) && isArrayOf<DataChunk>(thing.data, isDataChunk);
 
+export const isTaskTypeInfo = (thing: unknown): thing is TaskTypeInfo =>
+  (typeof thing === 'object') && (thing != null) &&
+  ('instructionsText' in thing) && (typeof thing.instructionsText === 'string') &&
+  ('instructionsSchema' in thing) && isJsonSchema(thing.instructionsSchema);
+
+export const isTaskSeed = (thing: unknown): thing is TaskSeed =>
+    (typeof thing === 'object') && (thing != null) &&
+    ('type' in thing) && isA<TaskType>(TaskTypes, thing.type);
+
 export const isJsonSchema = (thing: unknown): thing is JSONSchema =>
   (typeof thing === 'object') && (thing != null) &&
   ('$id' in thing) && (typeof thing.$id === 'string') &&
@@ -75,7 +93,9 @@ export const isServiceInfo = (thing: unknown): thing is ServiceInfo =>
   ('type' in thing) && (typeof thing.type == 'string') &&
   ('version' in thing) && (typeof thing.version == 'string') &&
   ('apiVersion' in thing) && (typeof thing.apiVersion == 'string') &&
-  ('instructionsSchema' in thing) && (typeof thing.instructionsSchema == 'object') && isJsonSchema(thing.instructionsSchema);
+  ('taskTypes' in thing) && (typeof thing.taskTypes == 'object') && (thing.taskTypes != null) &&
+  (Object.keys(thing.taskTypes).every(k => isA<TaskType>(TaskTypes, k))) &&
+  isMapOf(thing.taskTypes, isTaskTypeInfo);
 
 export const isResponseRow= (thing: unknown): thing is ResponseRow =>
   (typeof thing == 'object') && (thing != null) &&

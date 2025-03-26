@@ -16,7 +16,12 @@ export class InfoController {
       id: packageJson.name + '@ident',
       type: packageJson.name,
       version: packageJson.version,
-      instructionsSchema: this.as.schema
+      taskTypes: {
+        code: {
+          instructionsText: 'Blablabla',
+          instructionsSchema: this.as.schema
+        }
+      }
     }
   }
 }

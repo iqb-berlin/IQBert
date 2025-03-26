@@ -4,7 +4,7 @@ import {
   ResponseRow,
   Task,
   TaskAction,
-  TaskEventType,
+  TaskEventType, TaskSeed,
   TaskType
 } from '../../interfaces/api.interfaces';
 import { IdService } from '../id.service';
@@ -47,7 +47,7 @@ export class TasksService {
     return Object.values(this.tasks).find(task => TasksService.getLastEvent(task) === 'commit');
   }
 
-  add(type: TaskType, instructions: AutoCodingInstructions): Task {
+  add(seed: TaskSeed, instructions: AutoCodingInstructions): Task {
     const newTask: Task = {
       id: IdService.create(),
       events: [{
@@ -55,7 +55,8 @@ export class TasksService {
         message: '',
         timestamp: Date.now()
       }],
-      type,
+      type: seed.type,
+      label: seed.label,
       data: [],
       instructions,
     }

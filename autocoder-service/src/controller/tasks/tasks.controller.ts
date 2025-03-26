@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Put } from '@nestjs/common';
 import { TasksService } from '../../services/tasks/tasks.service';
-import { DataChunk, ResponseRow, Task, TaskActions, TaskTypes } from '../../interfaces/api.interfaces';
+import {DataChunk, isTaskSeed, ResponseRow, Task, TaskActions, TaskTypes} from '../../interfaces/api.interfaces';
 import { isCarrier, isResponse } from '../../interfaces/iqb.interfaces';
 import { AutocoderService } from '../../services/autocoder/autocoder.service';
 
@@ -22,12 +22,8 @@ export class TasksController {
   put(
     @Body() body: unknown
   ): Task {
-    if (!isCarrier(body, 'type', TaskTypes)) throw new HttpException('Invalid or missing task-type.', HttpStatus.NOT_ACCEPTABLE);
-    if ('instructions' in body) {
-      if (this.as.validateScheme(body.instructions)) return this.ts.add(body.type, body.instructions)
-      throw new HttpException('Validation of coding scheme did not work.', HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-    return this.ts.add(body.type, this.as.getEmptyScheme());
+    if (!isTaskSeed(body)) throw new HttpException('Invalid or missing task-type.', HttpStatus.NOT_ACCEPTABLE);
+    return this.ts.add(body, this.as.getEmptyScheme());
   }
 
   @Get(':taskId')

@@ -5,7 +5,6 @@ import { ResponseRow } from '../../interfaces/api.interfaces';
 import { AutoCodingInstructions } from '../../interfaces/iqb.interfaces';
 
 
-
 @Injectable()
 export class DataService {
   constructor(
@@ -50,6 +49,8 @@ export class DataService {
   }
 
   getExampleCodingScheme(): AutoCodingInstructions {
-    return JSON.parse(fs.readFileSync(`${this.storageDir}/instructions/coding-scheme.json`, { encoding: 'utf8'})); // TODO use async
+    return <AutoCodingInstructions>{
+      variableCodings: []
+    }
   }
 }
