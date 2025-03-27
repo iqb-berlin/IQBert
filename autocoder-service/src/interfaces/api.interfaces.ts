@@ -14,7 +14,7 @@ export interface TaskTypeInfo {
   readonly instructionsSchema: JSONSchema;
 }
 
-export const TaskTypes = ['train', 'code', 'undefined'] as const;
+export const TaskTypes = ['train', 'code', 'unknown'] as const;
 export const TaskActions = ['commit', 'abort'] as const;
 export const TaskEventTypes = [ 'create', 'commit', 'start', 'fail', 'finish', 'abort' ] as const;
 export const ChunkTypes = ['input', 'output'] as const;
@@ -44,7 +44,7 @@ export interface Task extends TaskSeed {
   id: string;
   events: TaskEvent[];
   data: DataChunk[];
-  instructions: { [prop: string]: any };
+  instructions?: { [prop: string]: any };
 }
 
 export interface ResponseRow extends Response {
