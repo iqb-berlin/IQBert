@@ -1,5 +1,4 @@
-import {contains, isA, isArrayOf, isMapOf, isResponse} from './iqb.interfaces';
-import { Response } from '@iqb/responses';
+import { contains, isA, isArrayOf, isMapOf, isResponse, Response } from './iqb.interfaces';
 
 export interface ServiceInfo {
   readonly id: string;

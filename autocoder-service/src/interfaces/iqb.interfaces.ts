@@ -1,8 +1,18 @@
-import { Response } from '@iqb/responses';
+import { Response as ResponseBase } from '@iqb/responses';
 import { ResponseStatusType, ResponseValueType, VariableCodingData } from '@iqb/responses/coding-interfaces';
 
+export interface Response extends ResponseBase { // proposal
+  codeProbabilities: CodeProbabilities;
+}
+
+export interface CodeProbabilities {
+  [code: string]: number
+}
+
 export const ResponseStatusList = ['UNSET', 'NOT_REACHED', 'DISPLAYED', 'VALUE_CHANGED', 'SOURCE_MISSING',
-  'DERIVE_ERROR', 'VALUE_DERIVED', 'NO_CODING', 'INVALID', 'CODING_INCOMPLETE', 'CODING_ERROR', 'CODING_COMPLETE'];
+  'DERIVE_ERROR', 'VALUE_DERIVED', 'NO_CODING', 'INVALID', 'CODING_INCOMPLETE', 'CODING_ERROR', 'CODING_COMPLETE',
+  'CODING_SEMI_COMPLETE' // proposal
+];
 
 export type AutoCodingInstructions = {
     variableCodings: VariableCodingData[];
@@ -38,6 +48,11 @@ export const isResponseValueType =
     (['string', 'number', 'boolean'].includes(typeof thing)) ||
     (thing == null);
 
+export const isCodeProbabilities =
+  (thing: unknown): thing is CodeProbabilities =>
+    (typeof thing === 'object') && (thing != null) &&
+    Object.values(thing).every(k => typeof k === 'number');
+
 export const isResponse =
   (thing: unknown): thing is Response =>
     (typeof thing === 'object') && (thing != null) &&
@@ -46,7 +61,9 @@ export const isResponse =
     ('value' in thing) && isResponseValueType(thing.value) &&
     (!('subform' in thing) || (typeof thing.subform === 'string')) &&
     (!('code' in thing) || (typeof thing.code === 'number')) &&
-    (!('score' in thing) || (typeof thing.score === 'number'));
+    (!('score' in thing) || (typeof thing.score === 'number')) &&
+    (!('codeProbabilities' in thing) || isCodeProbabilities(thing.codeProbabilities)); // proposal
+
 
 export const isResponseList = (thing: unknown): thing is Response[] =>
   isArrayOf<Response>(thing, isResponse);
