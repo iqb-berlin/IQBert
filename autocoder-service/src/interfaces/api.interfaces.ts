@@ -1,11 +1,12 @@
-import { contains, isA, isArrayOf, isMapOf, isResponse, Response } from './iqb.interfaces';
+import { contains, isA, isArrayOf, isResponse, Response } from './iqb.interfaces';
 
 export interface ServiceInfo {
   readonly id: string;
   readonly type: string;
   readonly version: string;
   readonly apiVersion: string;
-  readonly taskTypes: Partial<{[ taskType in typeof TaskTypes[number]]: TaskTypeInfo }>;
+  readonly instructionsSchema: JSONSchema;
+  readonly instructionsText?: string;
 }
 
 export interface TaskTypeInfo {
@@ -39,11 +40,21 @@ export interface TaskSeed {
   label?: string;
 }
 
+export interface TaskUpdate {
+  type?: TaskType;
+  label?: string;
+  instructions?: { [prop: string]: any } | string;
+}
+
+export interface TaskInstructions {
+  [prop: string]: any
+}
+
 export interface Task extends TaskSeed {
   id: string;
   events: TaskEvent[];
   data: DataChunk[];
-  instructions?: { [prop: string]: any };
+  instructions?: TaskInstructions | string;
 }
 
 export interface ResponseRow extends Response {
@@ -55,10 +66,13 @@ export interface JSONSchema {
   $schema: string;
 }
 
-export const isTaskEvent = (event: unknown): event is TaskEvent =>
-  (typeof event == 'object') && (event != null) &&
-  ('timestamp' in event) && (typeof event.timestamp === 'number') &&
-  ('status' in event) && (typeof event.status === 'string') && isA<TaskEventType>(TaskEventTypes, event.status);
+export const isTaskInstructions = (thing: unknown): thing is TaskInstructions =>
+  (typeof thing == 'object') && (thing != null);
+
+export const isTaskEvent = (thing: unknown): thing is TaskEvent =>
+  (typeof thing == 'object') && (thing != null) &&
+  ('timestamp' in thing) && (typeof thing.timestamp === 'number') &&
+  ('status' in thing) && (typeof thing.status === 'string') && isA<TaskEventType>(TaskEventTypes, thing.status);
 
 export const isDataChunk = (thing: unknown): thing is DataChunk =>
   (typeof thing === 'object') && (thing != null) &&
@@ -70,7 +84,8 @@ export const isTask = (thing: unknown): thing is Task =>
   ('id' in thing) && (typeof thing.id === 'string') &&
   ('type' in thing) && isA<TaskType>(TaskTypes, thing.type) &&
   ('events' in thing) && isArrayOf<TaskEvent>(thing.events, isTaskEvent) &&
-  ('data' in thing) && isArrayOf<DataChunk>(thing.data, isDataChunk);
+  ('data' in thing) && isArrayOf<DataChunk>(thing.data, isDataChunk) &&
+  (!('instructions' in thing) || ((typeof thing.instructions === 'string') || isTaskInstructions(thing.instructions)));
 
 export const isTaskTypeInfo = (thing: unknown): thing is TaskTypeInfo =>
   (typeof thing === 'object') && (thing != null) &&
@@ -78,8 +93,8 @@ export const isTaskTypeInfo = (thing: unknown): thing is TaskTypeInfo =>
   ('instructionsSchema' in thing) && isJsonSchema(thing.instructionsSchema);
 
 export const isTaskSeed = (thing: unknown): thing is TaskSeed =>
-    (typeof thing === 'object') && (thing != null) &&
-    ('type' in thing) && isA<TaskType>(TaskTypes, thing.type);
+  (typeof thing === 'object') && (thing != null) &&
+  ('type' in thing) && isA<TaskType>(TaskTypes, thing.type);
 
 export const isJsonSchema = (thing: unknown): thing is JSONSchema =>
   (typeof thing === 'object') && (thing != null) &&
@@ -92,9 +107,7 @@ export const isServiceInfo = (thing: unknown): thing is ServiceInfo =>
   ('type' in thing) && (typeof thing.type == 'string') &&
   ('version' in thing) && (typeof thing.version == 'string') &&
   ('apiVersion' in thing) && (typeof thing.apiVersion == 'string') &&
-  ('taskTypes' in thing) && (typeof thing.taskTypes == 'object') && (thing.taskTypes != null) &&
-  (Object.keys(thing.taskTypes).every(k => isA<TaskType>(TaskTypes, k))) &&
-  isMapOf(thing.taskTypes, isTaskTypeInfo);
+  ('instructionsSchema' in thing) && isJsonSchema(thing.instructionsSchema);
 
 export const isResponseRow= (thing: unknown): thing is ResponseRow =>
   (typeof thing == 'object') && (thing != null) &&
