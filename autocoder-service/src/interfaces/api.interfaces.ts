@@ -66,6 +66,16 @@ export interface JSONSchema {
   $schema: string;
 }
 
+export interface Coder {
+  id: string;
+  label: string;
+}
+
+export const isCoder = (thing: unknown): thing is Coder =>
+  (typeof thing == 'object') && (thing != null) &&
+  ('id' in thing) && (typeof thing.id === 'string') &&
+  ('label' in thing) && (typeof thing.label === 'string');
+
 export const isTaskInstructions = (thing: unknown): thing is TaskInstructions =>
   (typeof thing == 'object') && (thing != null);
 
