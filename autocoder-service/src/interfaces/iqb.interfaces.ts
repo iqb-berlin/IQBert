@@ -2,10 +2,10 @@ import { Response as ResponseBase } from '@iqb/responses';
 import { ResponseStatusType, ResponseValueType, VariableCodingData } from '@iqb/responses/coding-interfaces';
 
 export interface Response extends ResponseBase { // proposal
-  codingProbabilities: CodeProbabilities;
+  codingProbabilities?: CodingProbabilities;
 }
 
-export interface CodeProbabilities {
+export interface CodingProbabilities {
   [code: string]: number
 }
 
@@ -48,8 +48,8 @@ export const isResponseValueType =
     (['string', 'number', 'boolean'].includes(typeof thing)) ||
     (thing == null);
 
-export const isCodeProbabilities =
-  (thing: unknown): thing is CodeProbabilities =>
+export const isCodingProbabilities =
+  (thing: unknown): thing is CodingProbabilities =>
     (typeof thing === 'object') && (thing != null) &&
     Object.values(thing).every(k => typeof k === 'number');
 
@@ -62,7 +62,7 @@ export const isResponse =
     (!('subform' in thing) || (typeof thing.subform === 'string')) &&
     (!('code' in thing) || (typeof thing.code === 'number')) &&
     (!('score' in thing) || (typeof thing.score === 'number')) &&
-    (!('codeProbabilities' in thing) || isCodeProbabilities(thing.codeProbabilities)); // proposal
+    (!('codingProbabilities' in thing) || isCodingProbabilities(thing.codingProbabilities)); // proposal
 
 
 export const isResponseList = (thing: unknown): thing is Response[] =>
