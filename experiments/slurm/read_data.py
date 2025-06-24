@@ -2,11 +2,23 @@ import json
 import sys
 import random
 
+from datasets import Dataset
+
+
 def partition (list_in, n):
     random.shuffle(list_in)
-    return [list_in[i::n] for i in range(n)], [list_in[i2::n] for i2 in range(n, len(list_in))]
+    return list_in[0:n], list_in[n:len(list_in)]
 
-def get_data(file_path):
+
+def to_dataset(data) -> Dataset:
+    texts = []
+    labels = []
+    for item in data:
+        texts.append(item["value"])
+        labels.append(item["code"])
+    return Dataset.from_dict({"text": texts, "label": labels})
+
+def get_data(file_path) -> [list, list]:
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
