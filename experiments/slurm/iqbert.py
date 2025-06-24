@@ -39,3 +39,4 @@ def finetune_model(dataset: Union[DatasetDict, Dataset, IterableDatasetDict, Ite
 
     trainer.save_model("./bert-finetuned")
     tokenizer.save_pretrained("./bert-finetuned")
+
