@@ -23,6 +23,7 @@ def get_data(file_path):
     set1, set2 = partition(data, split_1_size)
 
     print(f"Dataset of {total_size} split into {len(set1)} and {len(set2)} samples.")
+    return set1, set2
 
 def store_data(data, file_path):
     try:
