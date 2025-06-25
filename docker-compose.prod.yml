@@ -1,0 +1,70 @@
+x-env-oauth2-proxy: &env-oauth2-proxy
+  OAUTH2_PROXY_PROVIDER: keycloak-oidc
+  OAUTH2_PROXY_OIDC_ISSUER_URL: https://keycloak.${SERVER_NAME}/realms/iqb
+  OAUTH2_PROXY_SKIP_OIDC_DISCOVERY: true
+  OAUTH2_PROXY_LOGIN_URL: https://keycloak.${SERVER_NAME}/realms/iqb/protocol/openid-connect/auth
+  OAUTH2_PROXY_REDEEM_URL: http://keycloak:8080/realms/iqb/protocol/openid-connect/token
+  OAUTH2_PROXY_OIDC_JWKS_URL: http://keycloak:8080/realms/iqb/protocol/openid-connect/certs
+  OAUTH2_PROXY_COOKIE_SECURE: true
+  OAUTH2_PROXY_SCOPE: openid
+  OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
+  OAUTH2_PROXY_REVERSE_PROXY: true
+  OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
+  OAUTH2_PROXY_ERRORS_TO_INFO_LOG: true
+  OAUTH2_PROXY_HTTP_ADDRESS: 0.0.0.0:4180
+  OAUTH2_PROXY_SKIP_AUTH_PREFLIGHT: true
+
+services:
+  ics-iqbert-redis:
+    restart: always
+    networks:
+      - application-network
+    deploy:
+      mode: global
+
+  ics-iqbert-worker:
+    restart: always
+    networks:
+      - application-network
+    deploy:
+      mode: global
+
+  ics-iqbert-backend:
+    restart: always
+    networks:
+      - application-network
+    deploy:
+      mode: global
+    environment:
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS-*}
+
+  ics-iqbert-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.5.1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ics-iqbert-backend-oauth.entrypoints=websecure"
+      - "traefik.http.routers.ics-iqbert-backend-oauth.tls=true"
+      - "traefik.http.routers.ics-iqbert-backend-oauth.tls.certresolver=${TLS_CERTIFICATE_RESOLVER}"
+      - "traefik.http.routers.ics-iqbert-backend-oauth.rule=Host(`iqbert.${SERVER_NAME}`)"
+      - "traefik.http.routers.ics-iqbert-backend-oauth.middlewares=security-headers"
+      - "traefik.docker.network=app-net"
+    environment:
+      <<: *env-oauth2-proxy
+      OAUTH2_PROXY_CLIENT_ID: ics-iqbert
+      OAUTH2_PROXY_CLIENT_SECRET: ${ICS_HULLM_CLIENT_SECRET}
+      OAUTH2_PROXY_REDIRECT_URL: https://iqbert.${SERVER_NAME}/oauth2/callback
+      OAUTH2_PROXY_COOKIE_SECRET: ${ICS_HULLM_COOKIE_SECRET}
+      OAUTH2_PROXY_EMAIL_DOMAINS: ${TRAEFIK_EMAIL_DOMAIN}
+      OAUTH2_PROXY_UPSTREAMS: http://ics-iqbert-backend:9997/info
+    restart: always
+    networks:
+      - application-network
+    deploy:
+      mode: global
+    expose:
+      - 4180
+
+networks:
+  application-network:
+    name: app-net
+    external: true
