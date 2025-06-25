@@ -19,7 +19,7 @@ def tokenize_data(tokenizer: PreTrainedTokenizerBase, dataset: Union[DatasetDict
     )
 
 def finetune_model(dataset: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]):
-    dataset = dataset.train_test_split(test=0.1)
+    dataset = dataset.train_test_split(test_size=0.1)
 
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
     tokenized_dataset = tokenize_data(tokenizer, dataset)
