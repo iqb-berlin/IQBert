@@ -1,16 +1,9 @@
 from typing import Union
 
-from datasets import Dataset, load_dataset, DatasetDict, IterableDatasetDict, IterableDataset
+from torch import Dataset, DatasetDict, IterableDatasetDict, IterableDataset
 from transformers import BertTokenizer, BertForSequenceClassification, TrainingArguments, Trainer, \
     PreTrainedTokenizerBase
 
-from read_data import partition
-
-
-def load_data() -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
-    # data = {"text": [...], "label": [...]}
-    # dataset = Dataset.from_dict(data)
-    return load_dataset("imdb")
 
 def tokenize_data(tokenizer: PreTrainedTokenizerBase, dataset: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]) -> DatasetDict:
     return dataset.map(

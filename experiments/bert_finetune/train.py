@@ -1,5 +1,5 @@
 import sys
-from read_data import to_dataset, get_data, store_data
+from data import to_dataset, get_data, store_data
 from iqbert import finetune_model
 
 set1, set2 = get_data(sys.argv[1])

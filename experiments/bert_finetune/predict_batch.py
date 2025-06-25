@@ -2,7 +2,7 @@ from transformers import BertTokenizer, BertForSequenceClassification
 import torch
 import sys
 
-from read_data import get_data, store_data, load_data_file
+from data import store_data, load_data_file
 
 tokenizer = BertTokenizer.from_pretrained("./bert-finetuned")
 model = BertForSequenceClassification.from_pretrained("./bert-finetuned")
@@ -16,7 +16,6 @@ for datapoint in data:
     with torch.no_grad():
         logits = model(**inputs).logits
         predicted_class = torch.argmax(logits).item()
-
 
     print("Predicted class: ", predicted_class)
     result.append({"value": datapoint['value'], "class": predicted_class})

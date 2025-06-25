@@ -2,15 +2,13 @@ import json
 import sys
 import random
 
-from datasets import Dataset
-
+from torch import Dataset
 
 def partition(data: list, n: float) -> tuple[list, list]:
     total_size = len(data)
     edge = int(total_size * n)
     random.shuffle(data)
     return data[0:edge], data[edge:len(data)]
-
 
 def to_dataset(data) -> Dataset:
     texts = []
