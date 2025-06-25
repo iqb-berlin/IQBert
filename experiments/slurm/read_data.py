@@ -20,21 +20,22 @@ def to_dataset(data) -> Dataset:
         labels.append(1 if item["code"] >= 0 else 0)
     return Dataset.from_dict({"text": texts, "label": labels})
 
-def get_data(file_path) -> tuple[list, list]:
+def load_data_file(file_path: str) -> list:
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
     except Exception as e:
         print(f"Failed to read/parse JSON from {file_path}: {e}")
         sys.exit(1)
-
     if not isinstance(data, list):
         print("JSON root element is not an array. Exiting.")
         sys.exit(1)
+    return data
 
+def get_data(file_path: str) -> tuple[list, list]:
+    data = load_data_file(file_path)
     total_size = len(data)
     set1, set2 = partition(data, 2/3)
-
     print(f"Dataset of {total_size} split into {len(set1)} and {len(set2)} samples.")
     return set1, set2
 
