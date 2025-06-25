@@ -3,7 +3,7 @@
   <component name="Black">
     <option name="sdkName" value="ics-iqbert LOKAAL" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_24" project-jdk-name="ics-iqbert LOKAAL" project-jdk-type="Python SDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_24" project-jdk-name="Python 3.11 (IQBert)" project-jdk-type="Python SDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="PyPackaging">

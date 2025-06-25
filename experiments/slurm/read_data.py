@@ -5,9 +5,11 @@ import random
 from datasets import Dataset
 
 
-def partition (list_in, n):
-    random.shuffle(list_in)
-    return list_in[0:n], list_in[n:len(list_in)]
+def partition(data: list, n: float) -> tuple[list, list]:
+    total_size = len(data)
+    edge = int(total_size * n)
+    random.shuffle(data)
+    return data[0:edge], data[edge:len(data)]
 
 
 def to_dataset(data) -> Dataset:
@@ -18,7 +20,7 @@ def to_dataset(data) -> Dataset:
         labels.append(item["code"])
     return Dataset.from_dict({"text": texts, "label": labels})
 
-def get_data(file_path) -> [list, list]:
+def get_data(file_path) -> tuple[list, list]:
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
@@ -31,8 +33,7 @@ def get_data(file_path) -> [list, list]:
         sys.exit(1)
 
     total_size = len(data)
-    split_1_size = int(total_size * 2 / 3)
-    set1, set2 = partition(data, split_1_size)
+    set1, set2 = partition(data, 2/3)
 
     print(f"Dataset of {total_size} split into {len(set1)} and {len(set2)} samples.")
     return set1, set2

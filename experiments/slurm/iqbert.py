@@ -1,19 +1,26 @@
 from typing import Union
 
 from datasets import Dataset, load_dataset, DatasetDict, IterableDatasetDict, IterableDataset
-from transformers import BertTokenizer, BertForSequenceClassification, TrainingArguments, Trainer
+from transformers import BertTokenizer, BertForSequenceClassification, TrainingArguments, Trainer, \
+    PreTrainedTokenizerBase
+
+from read_data import partition
+
 
 def load_data() -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
     # data = {"text": [...], "label": [...]}
     # dataset = Dataset.from_dict(data)
     return load_dataset("imdb")
 
-def tokenize_data(tokenizer, dataset: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]) -> DatasetDict:
-    def tokenize(example):
-        return tokenizer(example["text"], truncation=True, padding="max_length")
-    return dataset.map(tokenize, batched=True)
+def tokenize_data(tokenizer: PreTrainedTokenizerBase, dataset: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]) -> DatasetDict:
+    return dataset.map(
+        lambda item: tokenizer(item["text"], truncation=True, padding="max_length"),
+        batched=True
+    )
 
 def finetune_model(dataset: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]):
+    dataset = dataset.train_test_split(test=0.1)
+
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
     tokenized_dataset = tokenize_data(tokenizer, dataset)
 
