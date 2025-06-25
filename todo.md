@@ -13,4 +13,4 @@
 * Validierung während des lernvorgangs und automatische Auswahl des besten Zustands
 * Auf mehr codes als nur 0 und 1 hin trainieren
 * verschiedene Tokenizer vorschalten (konfigurierbar machen?)
-* Anstatt BertForSequenceClassification z. B. BertForQuestionAnswering probieren 
+* Andere heads als BertForSequenceClassification z. B. BertForQuestionAnswering probieren (konfigurierbar machen?)
