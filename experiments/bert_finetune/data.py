@@ -2,7 +2,7 @@ import json
 import sys
 import random
 
-from torch import Dataset
+from datasets import Dataset
 
 def partition(data: list, n: float) -> tuple[list, list]:
     total_size = len(data)

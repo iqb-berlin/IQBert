@@ -1,6 +1,6 @@
 from typing import Union
 
-from torch import Dataset, DatasetDict, IterableDatasetDict, IterableDataset
+from datasets import Dataset, DatasetDict, IterableDatasetDict, IterableDataset
 from transformers import BertTokenizer, BertForSequenceClassification, TrainingArguments, Trainer, \
     PreTrainedTokenizerBase
 
@@ -22,7 +22,7 @@ def finetune_model(dataset: Union[DatasetDict, Dataset, IterableDatasetDict, Ite
     # TODO a validation dataset and add load_best_model_at_end
     # TODO add optional seed= for reproducibility
 
-    # TODO experiment with a learning rate scheduler (warump)
+    # TODO experiment with a learning rate scheduler (warmup)
     # TODO optimize parameters
     training_args = TrainingArguments(
         output_dir="./results",
