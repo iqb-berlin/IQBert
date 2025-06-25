@@ -17,7 +17,7 @@ def to_dataset(data) -> Dataset:
     labels = []
     for item in data:
         texts.append(item["value"])
-        labels.append(item["code"] if item["code"] >= 0 else 0)
+        labels.append(1 if item["code"] >= 0 else 0)
     return Dataset.from_dict({"text": texts, "label": labels})
 
 def get_data(file_path) -> tuple[list, list]:
