@@ -9,10 +9,14 @@ services:
       - ./lib:/app/lib
 
   ics-iqbert-backend:
-    command: uvicorn ics_components.main:app --port 9997 --reload --app-dir src --host 0.0.0.0
+    volumes:
+      - ./ics:/app/ics
+      - ./lib:/app/lib
+    command: uvicorn ics_components.main:app --port 9996 --reload --app-dir src --host 0.0.0.0
     ports:
-      - 9898:9898 # python debug server
-      - 9997:9997
+      - 9899:9899 # python debug server
+      - 9996:9996
+
   ics-iqbert-rq-dashboard:
     image: ${REGISTRY_PATH}ics-iqbert-worker
     container_name: ics-iqbert-rq-dashboard
@@ -20,7 +24,7 @@ services:
       dockerfile: worker.Dockerfile
     command: rq-dashboard --redis-url=redis://ics-iqbert-redis:6379
     ports:
-      - 9181:9181
+      - 9182:9182
 
 
 

@@ -20,20 +20,26 @@ def to_dataset(data: list[Response]) -> Dataset:
     texts = []
     labels = []
     for item in data:
-        texts.append(item["value"])
-        labels.append(1 if item["code"] >= 0 else 0)
+        texts.append(item.value)
+        labels.append(1 if item.code >= 0 else 0)
     return Dataset.from_dict({"text": texts, "label": labels})
 
 def code(model_id: str, data: List[Response], reporter: Callable[[str, bool], None]) -> List[Response]:
-    tokenizer = BertTokenizer.from_pretrained(f"./data/{model_id}")
-    model = BertForSequenceClassification.from_pretrained(f"./data/{model_id}")
+    tokenizer = BertTokenizer.from_pretrained(f"/data/{model_id}")
+    model = BertForSequenceClassification.from_pretrained(f"/data/{model_id}")
+    i = 0
     for datapoint in data:
-        inputs = tokenizer(datapoint['value'], return_tensors="pt")
+        print('!?')
+        print(datapoint.value)
+        inputs = tokenizer(datapoint.value, return_tensors="pt")
         with torch.no_grad():
             logits = model(**inputs).logits
             predicted_class = torch.argmax(logits).item()
         datapoint.status = 'CODE_SELECTION_PENDING'
-        datapoint.codes = [predicted_class]
+        datapoint.codes = [Code(id = predicted_class)]
+        if i % 50 == 0:
+            reporter(f"{i}/{len(data)}", False)
+            i += 1
     return data
 
 def train(

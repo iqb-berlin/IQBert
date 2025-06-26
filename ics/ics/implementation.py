@@ -30,7 +30,7 @@ class TaskUpdate(TaskUpdateBase):
 class CoderRegistry(CoderRegistryInterface):
     def list_coders(self) -> list[Coder]:
         models = []
-        for subdir in os.listdir('./data'):
+        for subdir in os.listdir('/data'):
             if subdir.startswith("."):
                 continue
             models.append(subdir)
@@ -38,7 +38,7 @@ class CoderRegistry(CoderRegistryInterface):
 
     def delete_coder(self, coder_id: str) -> None:
         try:
-            os.remove(f"./data/{coder_id}")
+            os.remove(f"/data/{coder_id}")
         except FileNotFoundError:
             raise HTTPException(status_code=404, detail=f"Coder id {coder_id} not found")
         except PermissionError:

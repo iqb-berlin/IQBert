@@ -1,3 +1,4 @@
+import math
 from typing import Union, Callable
 
 from datasets import Dataset, DatasetDict, IterableDatasetDict, IterableDataset
@@ -29,7 +30,7 @@ def finetune_model(
     # TODO experiment with a learning rate scheduler (warmup)
     # TODO optimize parameters
     training_args = TrainingArguments(
-        output_dir="./results",
+        output_dir="/results",
         save_strategy="epoch",
         per_device_train_batch_size=8, # not too high since datasets are quite small and we want to avoid overfitting
         per_device_eval_batch_size=8,
@@ -40,9 +41,7 @@ def finetune_model(
 
     class CustomCallback(TrainerCallback):
         def on_epoch_end(self, args, state, control, **kwargs):
-            print(f"Epoch {state.epoch} ended!")
-            reporter(f"{state.epoch}/{args.num_train_epochs}", False)
-
+            reporter(f"{math.ceil(state.epoch)}/{args.num_train_epochs}", False)
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -50,9 +49,7 @@ def finetune_model(
         eval_dataset=tokenized_dataset["test"],
         callbacks=[CustomCallback]
     )
-
     trainer.train()
-
-    trainer.save_model(f"./data/{name}")
-    tokenizer.save_pretrained(f"./data/{name}")
+    trainer.save_model(f"/data/{name}")
+    tokenizer.save_pretrained(f"/data/{name}")
 
