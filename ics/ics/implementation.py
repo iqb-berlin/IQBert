@@ -1,5 +1,7 @@
 import os
 from typing import Optional
+
+from fastapi import HTTPException
 from pydantic import BaseModel, Field
 from redis import StrictRedis
 
@@ -12,16 +14,12 @@ redis_store = StrictRedis(host=redis_host, port=6379, db=0, decode_responses=Tru
 class IcService(BaseModel):
     @staticmethod
     def name() -> str:
-        return "hu-llm"
+        return "iqbert"
 
 class TaskInstructions(BaseModel):
-    text: str = Field(default = 'Antworte nur mit 0 oder 1 ob folgendes korrekt ist: "$VALUE"', description = "Promttext")
     @staticmethod
     def description() -> str:
-        return ("<a href='https://llm1-compute.cms.hu-berlin.de/' target='_blank'>HU-LLM</a> wird nur mit einem Promt bedient.<br>"
-                "Promt zur Auswertung hier eingeben (Der Ausdruck <i>$VALUE</i> wird gegen den Wert ersetzt, der zu codieren ist.<br>"
-                "Das Promt sollte eine Aufforderung enthalten, nur mit 0 oder 1 zu antworten, denn die Antwort wird immer als Zahl"
-                " ( = Code)interpretiert.</a>")
+        return ("Training parameter: TODO")
 
 class Task(TaskBase):
     instructions: Optional[TaskInstructions] = None
@@ -31,16 +29,17 @@ class TaskUpdate(TaskUpdateBase):
 
 class CoderRegistry(CoderRegistryInterface):
     def list_coders(self) -> list[Coder]:
-        coders : list[Coder] = []
-        for key in redis_store.keys('instructions:*'):
-            instructions = TaskInstructions.model_validate_json(redis_store.get(key))
-            coders.append(
-                Coder(
-                    id = key.replace('instructions:', ''),
-                    label = instructions.text[:150]
-                )
-            )
-        return coders
+        models = []
+        for subdir in os.listdir('./data'):
+            if subdir.startswith("."):
+                continue
+            models.append(subdir)
+        return [Coder(id=model_id, label=model_id) for model_id in models]
 
     def delete_coder(self, coder_id: str) -> None:
-        redis_store.delete('instructions:' + coder_id)
+        try:
+            os.remove(f"./data/{coder_id}")
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail=f"Coder id {coder_id} not found")
+        except PermissionError:
+            raise HTTPException(status_code=403, detail=f"Could not delete file of {coder_id}")
